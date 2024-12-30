@@ -1,0 +1,248 @@
+
+
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+:root {
+  font-size: 12px;
+  --color-text: #fff;
+  --color-bg: #aaa;
+  --color-link: #fff;
+  --color-link-hover: #fff;
+  --page-padding: 1.5rem;
+}
+
+body {
+  margin: 0;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-family: ui-monospace, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page Loader */
+.js .loading::before,
+.js .loading::after {
+  content: '';
+  position: fixed;
+  z-index: 10000;
+}
+
+.js .loading::before {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+}
+
+.js .loading::after {
+  margin: 0 0 0 -50px;
+  width: 100px;
+  height: 1px;
+  top: 50%;
+  left: 50%;
+  background: var(--color-link);
+
+  animation: loaderAnim 1.5s ease-in-out infinite alternate forwards;
+  // alternate 
+  // → 一度100%まで再生した後、逆方向（100% → 0%）に再生
+  //   通常は100%までいくと0%からの再生になる
+
+  // forwards
+  // → アニメーションが終了した後、その最終状態(100%時点のスタイル)を維持する
+
+  // https://fuuno.net/cani/cani10/cani10.html
+  // animation-fill-mode
+  // → キーフレームの開始前を、「既定値(CSSの状態)にするか、最初のキーフレームにするか」
+  // 　また、キーフレームの終了後を「既定値(CSSの状態)に戻すか、最後のキーフレームの状態にするか」
+  // ① none     （初期値。キーフレーム開始前と終了後、規定値を維持）
+  // ② forwards （キーフレーム終了後、最後に採用されたキーフレームを維持）
+  // ③ backwards（キーフレーム開始前、最初に採用されたキーフレームを維持）
+  // ④ both     （②と③の両方の条件を満たす)
+  
+}
+
+@keyframes loaderAnim {
+  0% {
+    transform: scaleX(0);
+    transform-origin: 0% 50%;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: 0% 50%;
+  }
+  50.1% { // ここで右を起点にスケールを0にする(左から右に流れる)
+    transform: scaleX(1);
+    transform-origin: 100% 50%;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: 100% 50%;
+  }
+}
+
+.js canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-link);
+  outline: none;
+  cursor: pointer;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--color-link-hover);
+  outline: none;
+}
+
+/* Better focus styles from https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible */
+a:focus {
+  /* Provide a fallback style for browsers
+   that don't support :focus-visible */
+  outline: none;
+  background: lightgrey;
+}
+
+a:focus:not(:focus-visible) {
+  /* Remove the focus indicator on mouse-focus for browsers
+   that do support :focus-visible */
+  background: transparent;
+}
+
+a:focus-visible {
+  /* Draw a very noticeable focus style for
+   keyboard-focus on browsers that do support
+   :focus-visible */
+  outline: 2px solid red;
+  background: transparent;
+}
+
+.frame {
+  padding: 3rem var(--page-padding) 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: grid;
+  z-index: 1000;
+  grid-row-gap: 1rem;
+  grid-column-gap: 2rem;
+  pointer-events: none;
+  justify-items: start;
+  grid-template-columns: auto auto;
+  grid-template-areas: 'title' 'back' 'archive' 'github' 'sponsor' 'tags';
+}
+
+.frame #cdawrap {
+  justify-self: start;
+}
+
+.frame a {
+  pointer-events: auto;
+}
+
+.frame__title {
+  grid-area: title;
+  font-size: inherit;
+  margin: 0;
+}
+
+.frame__back {
+  grid-area: back;
+  justify-self: start;
+}
+
+.frame__archive {
+  grid-area: archive;
+  justify-self: start;
+}
+
+.frame__github {
+  grid-area: github;
+}
+
+.frame__tags {
+  grid-area: tags;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+} 
+
+#webgl {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  top: 0;
+  left: 0;
+  background: rgb(24, 24, 24);
+}
+
+#app {
+  position: relative;
+  z-index: 10;
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+.container {
+  max-height: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+$wrapper-padding:0vmax;
+
+.wrapper {
+  height: 100%;
+  max-height: 100%;
+  padding: $wrapper-padding;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  overflow: hidden;
+}
+
+.image-container {
+  display: inline-block;
+  // height: 100%;
+}
+
+img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0;
+  display: block;
+}
+
+@media screen and (min-width: 53em) {
+  body {
+    --page-padding: 2rem 3rem;
+  }
+  .frame {
+    padding: var(--page-padding);
+    height: 100%;
+    grid-template-columns: auto auto auto auto 1fr;
+    grid-template-rows: auto auto;
+    align-content: space-between;
+    grid-template-areas: 'title back github archive ...' 'tags tags tags sponsor sponsor';
+  }
+  .frame #cdawrap {
+    justify-self: end;
+    text-align: right
+  }
+}
+

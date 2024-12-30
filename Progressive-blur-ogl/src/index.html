@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="robots" content="all">
+	<title>WebGL Progressive Blur | Codrops</title>
+	<meta name="description" content="Implementation of a progressive blur effect using ogl - minimal WebGL library - with shaders.">
+	<link rel="icon" href="/fav/fav.ico" sizes="any">
+	<link rel="icon" href="/fav/fav.svg">
+	<link rel="mask-icon" href="/fav/fav-mask.svg" color="#FFFFFF">
+	<link rel="apple-touch-icon" href="/fav/apple-touch.png">
+
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Fustat:wght@200..800&display=swap" rel="stylesheet">
+</head>
+<body>
+	<main id="main">
+		<canvas id="gl"></canvas>
+
+		<header class="frame">
+			<a class="frame__back" href="https://tympanus.net/codrops/?p=78847">Read the tutorial</a>
+			<a class="frame__archive" href="https://tympanus.net/codrops/demos/">All demos</a>
+			<a class="frame__github" href="https://github.com/JorgeCapillo/webgl-progressive-blur">GitHub</a>
+			<nav class="frame__tags">
+				<a href="https://tympanus.net/codrops/demos/?tag=scroll">#scroll</a>
+				<a href="https://tympanus.net/codrops/demos/?tag=blur">#blur</a>
+				<a href="https://tympanus.net/codrops/demos/?tag=ogl">#ogl</a>
+				<a href="https://tympanus.net/codrops/demos/?tag=webgl">#webgl</a>
+			</nav>
+		</header>
+
+		<!-- hero -->
+		<section id="hero">
+			<h2>
+				<small>by Jorge Toloza</small>
+				<span>WebGL / OGL</span>
+				<strong>Progressive Blur</strong>
+			</h2>
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/6.webp" alt="fashion">
+				</figure>
+				<small>(01)</small>
+			</div>
+		</section>
+
+		<!-- section-0 -->
+		<section id="section-0">
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/1.webp" alt="silueta">
+				</figure>
+				<small>(02)</small>
+			</div>
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/2.webp" alt="camera">
+				</figure>
+				<small>(03)</small>
+			</div>
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/3.webp" alt="spheres">
+				</figure>
+				<small>(04)</small>
+			</div>
+		</section>
+
+		<!-- section center -->
+		<section id="section-centered">
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/4.webp" alt="diana">
+				</figure>
+				<small>(05)</small>
+			</div>
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/5.webp" alt="abuelo">
+				</figure>
+				<small>(06)</small>
+			</div>
+		</section>
+
+		<!-- section-1 -->
+		<section id="section-1">
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/0.webp" alt="tricycle">
+				</figure>
+				<small>(07)</small>
+			</div>
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/7.webp" alt="building">
+				</figure>
+				<small>(08)</small>
+			</div>
+		</section>
+
+		<!-- section-2 -->
+		<section id="list-section">
+			<ul>
+				<li>Santa Marta</li>
+				<li>Curramba</li>
+				<li>Spheres</li>
+				<li>Catedral</li>
+				<li>The Bird</li>
+			</ul>
+			<ul>
+				<li>Tricycle</li>
+				<li>Fashion</li>
+				<li>NINI9</li>
+				<li>Tote bags</li>
+				<li>Window</li>
+			</ul>
+			<ul>
+				<li>Monteria</li>
+				<li>Sky</li>
+				<li>Clothes</li>
+				<li>Buildings</li>
+				<li>Nature</li>
+			</ul>
+		</section>
+
+		<!-- section -3 -->
+		<section id="section-3">
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/8.webp" alt="tote bag">
+				</figure>
+				<small>(09)</small>
+			</div>
+		</section>
+
+		<!-- section-4 -->
+		<section id="section-4">
+			<div class="media-container">
+				<figure class="media">
+					<img src="/img/9.webp" alt="bird">
+				</figure>
+				<small>(10)</small>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<a href="https://tympanus.net/codrops/">@codrops</a>
+			<a href="https://jorgetoloza.co/">Made by Jorge Toloza</a>
+			<a href="https://instagram.com/jazanadipatocu/">Photos by @jazanadipatocu</a>
+		</footer>
+	</main>
+	
+  <script type="module" src="./js/pages/index.js"></script>
+</body>
+</html>

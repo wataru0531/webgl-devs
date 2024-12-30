@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grid Displacement Texture | Codrops</title>
+    <meta name="description" content="Demo for the tutorial on how to apply a pixel/grid displacement to a texture in Three.js" />
+    <meta name="keywords" content="cursor displacement, mousemove rgb shift, threejs" />
+    <meta name="author" content="Jean Mazouni for Codrops" />
+
+
+    <script>
+      document.documentElement.className="js";
+
+      window.addEventListener('load', function() {
+        const image = document.querySelector('.image-container img');
+        // console.dir(image);
+
+        // image.complete は現在の状態を確認するためのプロパティ
+        // img.onload は、画像が読み込み完了した「イベント」を扱う
+
+        if (image.complete) { // 画像が完全に読み込まれた場合に発火
+          removeLoadingClass();
+        } else {
+          image.addEventListener('load', removeLoadingClass);
+        }
+        // → 画像がすでに読み込まれている場合でも、まだの場合でも問題なく動作する
+
+        function removeLoadingClass() {
+          document.body.classList.remove('loading');
+        }
+      });
+    </script>
+
+  <script defer type="module" src="/src/main.ts"></script>
+
+  </head>
+  <body class="loading">
+    <!-- header -->
+    <header class="frame">
+      <h1 class="frame__title">Grid Deformation Effect by <a href="https://www.jeanmazouni.com/" target="_blank">Jean Mazouni</a></h1>
+      <a class="frame__back" href="https://tympanus.net/codrops/?p=80158">Read the tutorial</a>
+      <a class="frame__archive" href="https://tympanus.net/codrops/demos/">All demos</a>
+      <a class="frame__github" href="https://github.com/J0SUKE/grid-deformation-effect">GitHub</a>
+      <nav class="frame__tags">
+        <a href="https://tympanus.net/codrops/demos/?tag=three-js">#three.js</a>
+        <a href="https://tympanus.net/codrops/demos/?tag=webgl">#webgl</a>
+        <a href="https://tympanus.net/codrops/demos/?tag=distortion">#distortion</a>
+      </nav>
+    </header>
+    <!-- header -->
+
+    <div id="app">
+
+      <div class="container">
+        <div class="wrapper">
+          <div class="image-container">
+            <img src="./image.jpg" alt="Japanese table scene" />
+            <!-- <img src="./touka.avif" alt="Japanese table scene" /> -->
+            <!-- <img src="./kaneki.avif" alt="Japanese table scene" /> -->
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <canvas id="webgl"></canvas>
+
+  </body>
+</html>

@@ -1,0 +1,121 @@
+
+precision highp float;
+
+uniform vec2 iResolution;
+uniform vec2 iMouse;
+uniform sampler2D iChannel0;
+
+varying vec2 fragCoord;
+
+vec2 getDistortedUv(vec2 uv, vec2 direction, float factor){
+  vec2 scaledDirection = direction;
+  scaledDirection.y *= 2.0;
+  
+  return uv - scaledDirection * factor;
+}
+
+struct DistortedLens {
+  vec2 uv_R;
+  vec2 uv_G;
+  vec2 uv_B;
+  float focusSdf;
+  float sphereSdf;
+  float inside;
+}
+
+// Sdf
+// → 名前は Signed Distance Function (符号付き距離関数) のこと。
+//   ある点が特定の形状の境界に対してどれだけ離れているかを示すスカラー値を返す関数
+
+vec2 fixRotation(vec2 uv, vec2 center){
+  vec2 centered = uv - center;
+  centered.y = - centered.y;
+
+  return centered + center;
+}
+
+DistortedLens getLensDistortion(
+  vec2 p,
+  vec2 uv,
+  vec2 sphereCenter,
+  float sphereRadius,
+  float focusFactor,
+  float chromaticAberrationFactor
+){
+
+  vec2 distortionDirection = normalize(p - sphereCenter);
+  float focusRadius = sphereRadius * focusFactor;
+  float focusStrength = sphereRadius / 5000.;
+  float focusSdf = length(sphereCenter - p) - focusRadius;
+  float sphereSdf = length(sphereCenter - p) - sphereRadius;
+  float inside = smoothstep(0.0, 1.0, -sphereSdf / (sphereRadius * 0.001));
+
+  float magnifierFactor = focusSdf / (sphereRadius / focusRadius);
+  float mFactor = clamp(magnifierFactor * inside, 0.0, 1.0);
+  mFactor = pow(mFactor, 5.0);
+
+  vec3 distortionFactors = vec3(
+    mFactor * focusStrength * (1.0 + chromaticAberrationFactor),
+    mFactor * focusStrength,
+    mFactor * focusStrength * (1.0 - chromaticAberrationFactor)
+  );
+
+  vec2 uv_R = getDistortedUv(uv, distortionDirection, distortionFactors.r);
+  vec2 uv_G = getDistortedUv(uv, distortionDirection, distortionFactors.g);
+  vec2 uv_B = getDistortedUv(uv, distortionDirection, distortionFactors.b);
+
+  vec2 sphereCenterUv = sphereCenter / iResolution;
+
+  uv_R = fixRotation(uv_R, sphereCenterUv);
+  uv_G = fixRotation(uv_G, sphereCenterUv);
+  uv_B = fixRotation(uv_B, sphereCenterUv);
+
+  return DistortedLens(
+    uv_R,
+    uv_G,
+    uv_B,
+    focusSdf,
+    sphereSdf,
+    inside
+  );
+}
+
+vec2 zoomUv(vec2 uv, vec2 center, float zoom){
+  float zoomFactor = 1.0 / zoom;
+  vec2 centeredUv = uv - center;
+  centeredUv *= zoomFactor;
+
+  return centeredUv + center;
+}
+
+void main(){
+  vec2 p = fragCoord * iResolution;
+  vec2 vUv = fragCoord;
+
+  vec2 textureSize = iResolution;
+  vec2 sphereCenter = iMouse.xy;
+  vec2 sphereCenterUv = sphereCenter / textureSize;
+  float sphereRadius = iResolution.y * 0.3;
+  float focusFactor = 0.25;
+  float chromaticAberrationFactor = 0.25;
+  float zoom = 1.75;
+
+  vec2 zoomedUv = zoomUv(vUv, sphereCenterUv, zoom);
+
+  DistortedLens distortion = getLensDistortion(
+    p, zoomedUv, sphereCenter, sphereRadius, focusFactor, chromaticAberrationFactor
+  );
+
+  vec4 baseTexture = texture2D(iChannel0, vUv);
+
+  vec3 imageDistorted = vec3(
+    texture2D(iChannel0, distortion.uv_R).r,
+    texture2D(iChannel0, distortion.uv_G).g,
+    texture2D(iChannel0, distortion.uv_B).b
+  );
+
+  vec3 result = mix(baseTexture.rgb, imageDistorted, distortion.inside);
+  float alpha = distortion.inside;
+
+  gl_FragColor = vec4(result, alpha);
+}
