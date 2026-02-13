@@ -1,0 +1,83 @@
+[
+  {
+    "url": "/assets/1.webp",
+    "index": 1,
+    "name": "Morning Ascent",
+    "location": "Northern Range",
+    "data": "June 12, 1972",
+    "title": "Morning Ascent - Northern Range",
+    "description": "Photo 'Morning Ascent' taken at Northern Range on June 12, 1972."
+  },
+  {
+    "url": "/assets/2.webp",
+    "index": 2,
+    "name": "Camp at Dusk",
+    "location": "Base Camp",
+    "data": "September 4, 1974",
+    "title": "Camp at Dusk - Base Camp",
+    "description": "Photo 'Camp at Dusk' taken at Base Camp on September 4, 1974."
+  },
+  {
+    "url": "/assets/3.webp",
+    "index": 3,
+    "name": "Crossing the Valley",
+    "location": "Interior Highlands",
+    "data": "July 19, 1971",
+    "title": "Crossing the Valley - Interior Highlands",
+    "description": "Photo 'Crossing the Valley' taken at Interior Highlands on July 19, 1971."
+  },
+  {
+    "url": "/assets/4.webp",
+    "index": 4,
+    "name": "Quiet Plateau",
+    "location": "High Ridge",
+    "data": "May 3, 1976",
+    "title": "Quiet Plateau - High Ridge",
+    "description": "Photo 'Quiet Plateau' taken at High Ridge on May 3, 1976."
+  },
+  {
+    "url": "/assets/5.webp",
+    "name": "Rest Stop",
+    "index": 5,
+    "location": "Rocky Pass",
+    "data": "August 22, 1973",
+    "title": "Rest Stop - Rocky Pass",
+    "description": "Photo 'Rest Stop' taken at Rocky Pass on August 22, 1973."
+  },
+  {
+    "url": "/assets/6.webp",
+    "index": 6,
+    "name": "Evening Descent",
+    "location": "Southern Slope",
+    "data": "September 15, 1975",
+    "title": "Evening Descent - Southern Slope",
+    "description": "Photo 'Evening Descent' taken at Southern Slope on September 15, 1975."
+  },
+  {
+    "url": "/assets/7.webp",
+    "index": 7,
+    "name": "Along the Ridge",
+    "location": "Upper Trail",
+    "data": "June 28, 1977",
+    "title": "Along the Ridge - Upper Trail",
+    "description": "Photo 'Along the Ridge' taken at Upper Trail on June 28, 1977."
+  },
+  {
+    "url": "/assets/8.webp",
+    "index": 8,
+    "name": "Shelter from the Wind",
+    "location": "Expedition Route",
+    "data": "July 9, 1970",
+    "title": "Shelter from the Wind - Expedition Route",
+    "description": "Photo 'Shelter from the Wind' taken at Expedition Route on July 9, 1970."
+  },
+  {
+    "url": "/assets/9.webp",
+    "index": 9,
+    "name": "Last Light",
+    "location": "Far Horizon",
+    "data": "August 31, 1978",
+    "title": "Last Light - Far Horizon",
+    "description": "Photo 'Last Light' taken at Far Horizon on August 31, 1978."
+  }
+]

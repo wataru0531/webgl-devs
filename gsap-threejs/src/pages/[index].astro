@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import medias from '../data.json';
+import Header from '../components/header.astro';
+
+// ✅ ビルド時に静的ページを生成するための関数
+// → ビルド時に生成するページのパラメータ一覧を返す
+export const getStaticPaths = async () => {
+  return medias.map((media) => {
+    // console.log(media)
+    
+    // 👉 この形でオブジェクトを返す
+    return {
+      params: { index: media.index.toString() }, // 文字列で渡す
+      props: { media },
+    };
+  });
+};
+
+const { media } = Astro.props; // 👉 ここでpropsが渡される
+
+// console.log(media.title)
+---
+
+<Layout 
+  uid={`detail-${media.index}`} 
+  template="detail" 
+>
+
+  <Header />
+  <div class="details">
+    <div data-text-animation class="details-data">
+      <a href="/">← Index</a>
+      <p>{media.data}</p>
+      <p>{media.location}</p>
+      <p>{media.name}</p>
+    </div>
+    <div class="details-container">
+      <img
+        data-detail-media
+        loading="eager"
+        src={media.url}
+        alt={`Image ${media.index}`}
+      />
+    </div>
+  </div>
+</Layout>
