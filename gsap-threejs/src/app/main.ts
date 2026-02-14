@@ -17,6 +17,9 @@ import Media from './components/media';
 import { SplitText } from 'gsap/SplitText';
 import TextAnimation from './components/text-animation';
 import FontFaceObserver from 'fontfaceobserver';
+// → Webフォントが読み込まれたかどうかを検知するためのライブラリ
+// → フォントが読み込まれていない状態で SplitText を実行すると、
+//   行分割の計算がズレる可能性があるので使う。
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Flip, SplitText);
 
@@ -26,7 +29,7 @@ class App {
   template: 'home' | 'detail';
 
   mediaHomeState: Flip.FlipState;
-  scrollBlocked: boolean = false;
+  scrollBlocked: boolean = false; // スクロールするか、停止させるか
   scrollTop: number;
   textAnimation: TextAnimation;
   fontLoaded: boolean = false;
@@ -36,22 +39,27 @@ class App {
       history.scrollRestoration = 'manual';
     }
 
-    this.scroll = new Scroll();
+    this.scroll = new Scroll(); // ScrollSmoother初期化、スクロール量を取得
     this.canvas = new Canvas(); // Canvas、テクスチャ関係
-    this.textAnimation = new TextAnimation();
-    this.loadFont(() => {
+    this.textAnimation = new TextAnimation(); // ⭐️ ここから
+    this.loadFont(() => { // フォント反映、レイアウト確定、ScrollTrigger確定などを持って発火
       this.textAnimation.init();
     });
 
-    this.template = this.getCurrentTemplate();
+    this.template = this.getCurrentTemplate(); // home detail
 
+    // ✅ 
     this.loadImages(() => {
-      this.canvas.createMedias();
+      this.canvas.createMedias(); // テクスチャ生成、ScrollTriggerで監視
 
       if(this.fontLoaded) {
         this.textAnimation.init();
         this.textAnimation.animateIn();
       } else {
+        // 👉 フォント読み込み後に、new Eventでwindowに登録したイベントが発火
+        //    → dispatchEventで通知を受けた時に発火
+        // ✅ delayedCall → 指定した秒数後にコールバックを発火
+        // → ここではフォント反映、レイアウト確定、ScrollTrigger確定などを持っている。
         window.addEventListener('fontLoaded', () => {
           gsap.delayedCall(0, () => {
             gsap.delayedCall(0, () => {
@@ -66,42 +74,45 @@ class App {
     let activeLinkImage: HTMLImageElement;
     let scrollTop: number;
 
+    // ✅ Barba
+    // → ページをリロードせずに、HTMLだけ差し替えてアニメーション付きで遷移させるライブラリ
     barba.init({
       prefetchIgnore: true,
       transitions: [
         {
-          name: 'default-transition',
+          name: 'default-transition', // 通常のページ遷移 ... 特別な条件がない通常の遷移
           before: () => {
-            this.scrollBlocked = true;
-            this.scroll.s?.paused(true);
+            this.scrollBlocked = true; // スクロールを止める
+            this.scroll.s?.paused(true); // ScrollSmoother 停止
           },
-          leave: () => {
-            const medias = this.canvas.medias && this.canvas.medias;
+          leave: () => { // 👉 戻る時に発火
+            const medias = this.canvas.medias && this.canvas.medias; // ⭐️ 文法
+            // console.log(medias)
 
             medias?.forEach((media) => {
               if (!media) return;
-              media.onResize(this.canvas.sizes);
-              gsap.set(media.element, {
+              media.onResize(this.canvas.sizes); // リサイズ処理
+
+              gsap.set(media.element, { // 
                 visibility: 'hidden',
                 opacity: 0,
               });
             });
 
             return new Promise<void>((resolve) => {
+              // 画面からテキストを消すtl
               const tl = this.textAnimation.animateOut();
 
+              // 👉 テクスチャのuniform.uProgress 更新
               this.canvas.medias?.forEach((media) => {
                 if (!media) return;
-                tl.fromTo(
-                  media.material.uniforms.uProgress,
+                tl.fromTo(media.material.uniforms.uProgress,
                   { value: 1 },
                   {
                     duration: 1,
                     ease: 'linear',
                     value: 0,
-                  },
-                  0
-                );
+                  }, 0);
               });
 
               tl.call(() => {
@@ -110,6 +121,7 @@ class App {
               });
             });
           },
+          // ✅ 
           beforeEnter: () => {
             this.canvas.medias?.forEach((media) => {
               media?.destroy();
@@ -121,6 +133,7 @@ class App {
             this.scroll.reset();
             this.scroll.destroy();
           },
+          // ✅ 新しいページのDOMに合わせて再構築
           after: () => {
             this.scroll.init();
             this.textAnimation.init();
@@ -135,16 +148,31 @@ class App {
             });
           },
         },
+
+        // ⭐️ Barbaの挙動
+        // クリック
+        //   ↓
+        // before        ← 遷移開始直前（まだ旧ページ）
+        //   ↓
+        // leave         ← 旧ページをアニメーションで消す
+        //   ↓
+        // Barbaが新HTMLを取得・差し替え
+        //   ↓
+        // beforeEnter   ← 新ページがDOMに入った直後
+        //   ↓
+        // after         ← 遷移完了（新ページ確定）
         {
-          name: 'home-detail',
+          name: 'home-detail', // ⭐️ homeページ - detailページ に遷移する時の挙動
           from: {
             custom: () => {
               const activeLink = document.querySelector('a[data-home-link-active="true"]');
+              // console.log(activeLink); // クリックしたaタグ
               if (!activeLink) return false;
 
               return true;
             },
           },
+          // ✅ 遷移開始前
           before: () => {
             this.scrollBlocked = true;
             this.scroll.s?.paused(true);
@@ -154,41 +182,33 @@ class App {
             activeLinkImage = document.querySelector('a[data-home-link-active="true"] img') as HTMLImageElement;
 
             this.canvas.medias?.forEach((media) => {
-              if (!media) return;
+              if(!media) return;
               media.scrollTrigger.kill();
 
               const currentProgress = media.material.uniforms.uProgress.value;
               const totalDuration = 1.2;
 
-              if (media.element !== activeLinkImage) {
+              if(media.element !== activeLinkImage) {
                 const remainingDuration = totalDuration * currentProgress;
 
-                tl.to(
-                  media.material.uniforms.uProgress,
-                  {
-                    duration: remainingDuration,
-                    value: 0,
-                    ease: 'linear',
-                  },
-                  0
-                );
+                tl.to(media.material.uniforms.uProgress, {
+                  duration: remainingDuration,
+                  value: 0,
+                  ease: 'linear',
+                }, 0);
               } else {
                 const remainingDuration = totalDuration * (1 - currentProgress);
 
-                tl.to(
-                  media.material.uniforms.uProgress,
-                  {
-                    value: 1,
-                    duration: remainingDuration,
-                    ease: 'linear',
-                    onComplete: () => {
-                      media.element.style.opacity = '1';
-                      media.element.style.visibility = 'visible';
-                      gsap.set(media.material.uniforms.uProgress, { value: 0 });
-                    },
+                tl.to(media.material.uniforms.uProgress, {
+                  value: 1,
+                  duration: remainingDuration,
+                  ease: 'linear',
+                  onComplete: () => {
+                    media.element.style.opacity = '1';
+                    media.element.style.visibility = 'visible';
+                    gsap.set(media.material.uniforms.uProgress, { value: 0 });
                   },
-                  0
-                );
+                }, 0);
               }
             });
 
@@ -198,8 +218,7 @@ class App {
               });
             });
           },
-
-          leave: () => {
+          leave: () => { // ✅ 旧ページをアニメーションで消す
             scrollTop = this.scroll.getScroll();
 
             const container = document.querySelector('.container') as HTMLElement;
@@ -211,11 +230,12 @@ class App {
             this.mediaHomeState = Flip.getState(activeLinkImage);
             this.textAnimation.destroy();
           },
-          beforeEnter: () => {
+          // ⭐️ ここで、Barbaが新しいHTMLに差し替える
+          beforeEnter: () => { // ✅ 新ページがDOMに入った直後
             this.scroll.reset();
             this.scroll.destroy();
           },
-          after: () => {
+          after: () => { // ✅ 遷移完了(新ページ確定)
             this.scroll.init();
             this.textAnimation.init();
 
@@ -261,6 +281,7 @@ class App {
       ],
     });
 
+    // console.log(this); // App {canvas: Canvas, scroll: Scroll, template: 'home', ... }
     this.render = this.render.bind(this);
     gsap.ticker.add(this.render);
   }
@@ -274,15 +295,20 @@ class App {
     this.template = template as 'home' | 'detail';
   }
 
+  // ✅ 画像を読み込み後に発火させる
   loadImages(callback?: () => void) {
     const medias = document.querySelectorAll('img');
     let loadedImages = 0;
     const totalImages = medias.length;
 
     medias.forEach((img) => {
-      if (img.complete) {
+      if(img.complete) { // 画像が読み込まれているかどうか。ブラウザ標準
+        // console.log("img.complete!!")
         loadedImages++;
       } else {
+        // console.log("読み込まれていません"); // 発火せず
+        // completeがtrueの画像に対しては、loadが発火しない。
+        // なのでloadさせる。
         img.addEventListener('load', () => {
           loadedImages++;
           if (loadedImages === totalImages) {
@@ -292,28 +318,36 @@ class App {
       }
     });
 
-    if (loadedImages === totalImages) {
-      this.onReady(callback);
+    if(loadedImages === totalImages) {
+      this.onReady(callback); // 
     }
   }
 
+  // ✅ 
   onReady(callback?: () => void) {
-    if (callback) callback();
-    ScrollTrigger.refresh();
+    if(callback) callback();
+    ScrollTrigger.refresh(); // スクロールや要素の位置を再計算
   }
 
+  // ✅ フォントの読み込み後に発火
+  // → webフォントの読み込み前にGSAPのテキスト分割をするとずれてしまう可能性があるため
   loadFont(onLoaded: () => void) {
     const satoshi = new FontFaceObserver('Satoshi');
 
     satoshi.load().then(() => {
-      onLoaded();
+      onLoaded(); // this.textAnimation.init()のコールバック
       this.fontLoaded = true;
       window.dispatchEvent(new Event('fontLoaded'));
+      // → windowに対して「fontLoaded」というイベントを作り、発生させる。
+      // new Event() ... カスタムイベント(自分で作ったオリジナルのイベント)
     });
   }
 
+  // ✅ スクロール量を取得、meshのy軸の動きを制御
   render() {
-    this.scrollTop = this.scroll?.getScroll() || 0;
+    // scrollTop =「スクロールによって、トップがどれだけ上に押し上げられたか」という意味
+    // console.log(this.scroll.getScroll());
+    this.scrollTop = this.scroll?.getScroll() || 0; // 👉 スクロール量を取得
     this.canvas.render(this.scrollTop, !this.scrollBlocked);
   }
 }

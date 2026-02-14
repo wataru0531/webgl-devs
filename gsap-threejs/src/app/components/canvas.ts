@@ -106,7 +106,7 @@ export default class Canvas {
     })
   }
 
-  // ✅ 
+  // ✅ テクスチャ生成
   createMedias(activeElement?: HTMLImageElement) {
     const images = document.querySelectorAll("img");
 
@@ -127,13 +127,16 @@ export default class Canvas {
     });
   }
 
+  // ✅ レンダー
+  // scroll: スクロール量
   render(scroll: number, updateScroll: boolean = true) {
+    // console.log(scroll, updateScroll); // 遷移時はfalse
     this.medias?.forEach((media) => {
       if (updateScroll) {
         media?.updateScroll(scroll)
       }
     })
 
-    this.renderer.render(this.scene, this.camera)
+    this.renderer.render(this.scene, this.camera);
   }
 }

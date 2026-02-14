@@ -4,7 +4,7 @@ import medias from '../data.json';
 import Header from '../components/header.astro';
 
 // ✅ ビルド時に静的ページを生成するための関数
-// → ビルド時に生成するページのパラメータ一覧を返す
+// → ビルド時に生成するページのパラメータ一覧をjson文字列から返す
 export const getStaticPaths = async () => {
   return medias.map((media) => {
     // console.log(media)

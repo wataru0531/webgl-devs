@@ -26,6 +26,7 @@ export default class Scroll {
       
       // 毎フレーム、スクロールするたびに発火する。
       onUpdate: (self) => {
+        // console.log(self.scrollTop()); // スクロール量を取得
         this.scroll = self.scrollTop() // 常に現在位置を取得する
         // console.log(this.scroll);
       },

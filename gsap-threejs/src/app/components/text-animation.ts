@@ -16,33 +16,37 @@ interface SplitAnimationProps extends BaseAnimationProps {
   inStagger?: number;
   outStagger?: number;
 }
+// console.log(SplitText);
 
 export default class TextAnimation {
   elements: HTMLElement[];
   splitAnimations: SplitAnimationProps[] = [];
   fadeAnimations: BaseAnimationProps[] = [];
-  splitTweens: gsap.core.Tween[] = [];
-  fadeTweens: gsap.core.Tween[] = [];
+  splitTweens: gsap.core.Tween[] = []; // テキスト分割に関するアニメーション
+  fadeTweens: gsap.core.Tween[] = []; // デフォルトのfadeアニメーション
 
   constructor() {}
 
+  // ✅ 初期化
   init() {
-    this.splitAnimations = []; // split isStagger outStagger
-    this.fadeAnimations = []; // element inDuration outDuration inDelay
+    this.splitAnimations = []; 
+    this.fadeAnimations = [];
 
-    // as as ... ダブルキャスト。型チェックを無理やり突破して HTMLElement[] だと信じ込ませている」書き方
+    // ✅ 一度unknown(型不明)にキャスト → そのunknownをHTMLElement[]として扱う
+    //    querySelectorAll('div')の型は、NodeListOf<HTMLDivElement>。
+    //    NodeListOf<HTMLDivElement>を直接、HTMLDivElement[]に変換できないので、unknownを経由して無理やり変換。
     this.elements = document.querySelectorAll('[data-text-animation]') as unknown as HTMLElement[];
 
-
     this.elements.forEach((el) => {
+      // console.log(el);
       const inDuration = parseFloat(el.getAttribute('data-text-animation-in-duration') || '0.6');
-
       const outDuration = parseFloat(el.getAttribute('data-text-animation-out-duration') || '0.3');
-
       const inDelay = parseFloat(el.getAttribute('data-text-animation-in-delay') || '0');
 
-      // Check if this should be a split text animation
-      if (el.hasAttribute('data-text-animation-split')) {
+      // 👉 テキスト分割する場合はラインに分割
+      if(el.hasAttribute('data-text-animation-split')) {
+        // console.log("data-text-animation-split");
+
         const split = SplitText.create(el, {
           type: 'lines',
           mask: 'lines',
@@ -50,7 +54,7 @@ export default class TextAnimation {
         });
 
         const inStagger = parseFloat(el.getAttribute('data-text-animation-in-stagger') || '0.06');
-
+        // console.log(inStagger); // 全て0.06
         const outStagger = parseFloat(el.getAttribute('data-text-animation-out-stagger') || '0.06');
 
         split.lines.forEach((line) => {
@@ -60,17 +64,19 @@ export default class TextAnimation {
         gsap.set(el, { autoAlpha: 1, visibility: 'visible' });
 
         this.splitAnimations.push({
-          element: el,
-          split,
+          element: el, // [data-text-animation]をもつ
+          split, // SplitText.create()で作ったインスタンス
           inDuration,
           outDuration,
           inStagger,
           outStagger,
           inDelay,
         });
+        // console.log(this.splitAnimations.length);
       } else {
-        // Default fade animation
-        gsap.set(el, { autoAlpha: 0, visibility: 'hidden' });
+        // テキスト分割させない場合
+        // console.log("テキスト分割させない場合");
+        gsap.set(el, { autoAlpha: 0, visibility: 'hidden' }); // → 後から表示させる
 
         this.fadeAnimations.push({
           element: el,
@@ -82,17 +88,27 @@ export default class TextAnimation {
     });
   }
 
+  // ✅ 分割したテキストをアニメーションさせる場合 → スクロールにより表示
   animateIn({ delay = 0 } = {}) {
-    // Split text animations
     this.splitAnimations.forEach(({ element, split, inDuration, inStagger, inDelay }) => {
+      // console.log(element); // 1 2 3
       const tweenWithScroll = gsap.to(split.lines, {
         yPercent: 0,
         stagger: inStagger,
         scrollTrigger: {
-          trigger: element,
+          trigger: element, // 👉 [data-text-animation]の要素
           start: 'top bottom',
           end: 'bottom top',
           toggleActions: 'play reset restart reset',
+          // → enter leave enterback leaveback の時の挙動を1つづつ記述
+          // play ... 入ると発火
+          // reset ... 最初の状態に戻す
+          // restart ... 最初から再生
+
+          // scrub: true, // アニメーションとスクロールを同期
+          // onUpdate: ({ progress }) => {
+          //   console.log(progress);
+          // }
         },
         ease: 'expo',
         duration: inDuration,
@@ -102,9 +118,11 @@ export default class TextAnimation {
       this.splitTweens.push(tweenWithScroll);
     });
 
-    // Fade animations
+    // Fade animations → テキスト分割しなかった要素を対象にしたアニメーション
     this.fadeAnimations.forEach(({ element, inDuration, inDelay }) => {
       const fadeTween = gsap.to(element, {
+        // onStart: () => console.log("onStart"),
+
         autoAlpha: 1,
         scrollTrigger: {
           trigger: element,
@@ -122,42 +140,37 @@ export default class TextAnimation {
     return gsap.timeline();
   }
 
+  // ✅ 画面からテキストを消すためのアニメーション → 画像クリック時に発火
   animateOut() {
     const tl = gsap.timeline();
 
     // Split animations
     this.splitAnimations.forEach(({ split, outDuration, outStagger }) => {
-      tl.to(
-        split.lines,
-        {
-          yPercent: 100,
-          stagger: outStagger,
-          ease: 'power2.out',
-          duration: outDuration,
-        },
-        0
-      );
+      tl.to(split.lines, {
+        yPercent: 100,
+        stagger: outStagger,
+        ease: 'power2.out',
+        duration: outDuration,
+      }, 0);
     });
 
     // Fade animations
     this.fadeAnimations.forEach(({ element, outDuration }) => {
-      tl.to(
-        element,
-        {
-          autoAlpha: 0,
-          ease: 'power2.out',
-          duration: outDuration,
-        },
-        0
-      );
+      tl.to(element, {
+        autoAlpha: 0,
+        ease: 'power2.out',
+        duration: outDuration,
+      }, 0);
     });
 
     return tl;
   }
 
+  // ✅ テキストアニメーションの解除
   destroy() {
     this.splitTweens.forEach((tween) => {
       tween.scrollTrigger?.kill();
+      // 👉 tweenに紐づいているScrollTriggerのイベント(スクロール監視)は残ったままになるので破棄する
       tween.kill();
     });
 
@@ -167,7 +180,7 @@ export default class TextAnimation {
     });
 
     this.splitAnimations.forEach(({ split }) => {
-      split.revert();
+      split.revert(); // 👉 分割したテキストを元に戻し、DOMも元の状態に戻す
     });
 
     this.splitTweens = [];

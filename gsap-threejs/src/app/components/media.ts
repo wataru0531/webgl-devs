@@ -174,20 +174,32 @@ export default class Media {
     )
   }
 
+  // ✅ Canvasのrenderで発火
   updateScroll(scrollY: number) {
-    this.currentScroll = (-scrollY * this.sizes.height) / window.innerHeight
+    // console.log(scrollY); // スクロール量
+    // console.log(this.sizes.height); // 15.346539759579208
+    // console.log(-scrollY / window.innerHeight); // 画面に対するスクロールの割合
+    // → それを、this.sizes.height(ワールド座標)にかけることでワールド座標の移動量を算出
+    this.currentScroll = (-scrollY * this.sizes.height) / window.innerHeight;
+    // console.log(this.currentScroll);
 
-    const deltaScroll = this.currentScroll - this.lastScroll
+    // 👉 前フレームからどれだけスクロール量が変化したか。
+    const deltaScroll = this.currentScroll - this.lastScroll;
+    // console.log(deltaScroll);
     this.lastScroll = this.currentScroll
 
-    this.updateY(deltaScroll)
+    this.updateY(deltaScroll);
   }
 
+  // ✅ meshのy軸をスクロールに合わせて動かす。
   updateY(deltaScroll: number) {
-    this.meshPosition.y -= deltaScroll
+    // console.log(deltaScroll);
+    this.meshPosition.y -= deltaScroll;
+    // console.log(this.meshPosition.y);
     this.mesh.position.y = this.meshPosition.y
   }
 
+  // ✅ Scroll Trigger で監視。
   observe() {
     this.scrollTrigger = gsap.to(this.material.uniforms.uProgress, {
       value: 1,
@@ -202,6 +214,7 @@ export default class Media {
     })
   }
 
+  // ✅ WebGL環境を消す、ScrollTriggerを解除
   destroy() {
     this.scene.remove(this.mesh)
     this.scrollTrigger.scrollTrigger?.kill()
@@ -212,7 +225,8 @@ export default class Media {
     this.material.dispose()
   }
 
-  onResize(sizes: Size) {
+  // ✅ 
+  onResize(sizes: Size) { // canvas.size
     this.sizes = sizes
 
     this.setNodeBounds()
