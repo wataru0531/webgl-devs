@@ -7,7 +7,6 @@
 //   sizes: this.sizes,
 // })
 
-
 import {
   Scene,
   ShaderMaterial,
@@ -51,6 +50,7 @@ export default class Media {
   onClickHandler: (e: PointerEvent) => void
 
   constructor({ element, scene, sizes }: Props) {
+    // console.log(element); // <img loading="eager" src="/assets/1.webp" alt="" />
     this.element = element; // 画像 img要素
     this.anchorElement = this.element.closest("a") as HTMLAnchorElement | undefined
     // console.log(this.anchorElement); // 親要素のaタグを取得
@@ -109,6 +109,7 @@ export default class Media {
 
   // ✅ 画像の位置情報などを取得
   setNodeBounds() {
+    // console.log(this.element); // img要素
     this.elementBounds = this.element.getBoundingClientRect();
     // console.log(this.elementBounds); // DOMRect {x: 26, y: 207.6953125, width: 331.4375, height: 249.6484375, top: 207.6953125, …}
 
@@ -130,25 +131,26 @@ export default class Media {
       height: (this.nodeDimensions.height * this.sizes.height) / window.innerHeight,
     }
 
-    // console.log(this.meshDimensions.width, this.meshDimensions.height); // 5.267469111275602 3.9676620790619386
+    // console.log(this.meshDimensions.width, this.meshDimensions.height); 
+    // 5.267469111275602 3.9676620790619386
     this.mesh.scale.x = this.meshDimensions.width;
     this.mesh.scale.y = this.meshDimensions.height;
   }
 
-  // ✅ ブラウザ座標における画像の位置を、ワールド座標に変換して、meshに適用する
+  // ✅ ブラウザ座標における画像の位置を、ワールド座標に変換
   setMeshPosition() {
-    // ワールド座標での位置の割合を算出
+    // ワールド座標でのleft、topからの距離の割合を算出
     this.meshPosition = {
       x: (this.elementBounds.left * this.sizes.width) / window.innerWidth,
       y: (-this.elementBounds.top * this.sizes.height) / window.innerHeight,
     }
 
     this.meshPosition.x -= this.sizes.width / 2; // 左にずらす
-    this.meshPosition.x += this.meshDimensions.width / 2; // meshの位置が左に
+    this.meshPosition.x += this.meshDimensions.width / 2; // meshの原点を「左端」から「中央」に移動
 
-    this.meshPosition.y -= this.meshDimensions.height / 2;
     this.meshPosition.y += this.sizes.height / 2;
-
+    this.meshPosition.y -= this.meshDimensions.height / 2;
+    
     this.mesh.position.x = this.meshPosition.x;
     this.mesh.position.y = this.meshPosition.y;
   }
@@ -179,14 +181,14 @@ export default class Media {
     // console.log(scrollY); // スクロール量
     // console.log(this.sizes.height); // 15.346539759579208
     // console.log(-scrollY / window.innerHeight); // 画面に対するスクロールの割合
-    // → それを、this.sizes.height(ワールド座標)にかけることでワールド座標の移動量を算出
+    // → ⭐️ それを、this.sizes.height(ワールド座標)にかけることでワールド座標の移動量を算出
     this.currentScroll = (-scrollY * this.sizes.height) / window.innerHeight;
     // console.log(this.currentScroll);
 
     // 👉 前フレームからどれだけスクロール量が変化したか。
     const deltaScroll = this.currentScroll - this.lastScroll;
     // console.log(deltaScroll);
-    this.lastScroll = this.currentScroll
+    this.lastScroll = this.currentScroll;
 
     this.updateY(deltaScroll);
   }
@@ -194,12 +196,12 @@ export default class Media {
   // ✅ meshのy軸をスクロールに合わせて動かす。
   updateY(deltaScroll: number) {
     // console.log(deltaScroll);
-    this.meshPosition.y -= deltaScroll;
+    this.meshPosition.y -= deltaScroll; // ワールド座標は上に動かすのはプラスなので、マイナスで変換
     // console.log(this.meshPosition.y);
     this.mesh.position.y = this.meshPosition.y
   }
 
-  // ✅ Scroll Trigger で監視。
+  // ✅ uProgressの値を0 〜 1に
   observe() {
     this.scrollTrigger = gsap.to(this.material.uniforms.uProgress, {
       value: 1,
@@ -211,6 +213,9 @@ export default class Media {
       },
       duration: 1.6,
       ease: "linear",
+      // onUpdate: () => {
+      //   console.log(this.material.uniforms.uProgress)
+      // }
     })
   }
 

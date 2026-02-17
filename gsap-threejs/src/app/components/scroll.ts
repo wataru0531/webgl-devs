@@ -4,6 +4,7 @@
 import { ScrollSmoother } from "gsap/ScrollSmoother"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
+
 export default class Scroll {
   scroll: number
   s: globalThis.ScrollSmoother | null
@@ -38,7 +39,7 @@ export default class Scroll {
 
   // スクロールをトップに戻す
   reset(immediate?: boolean) {
-    // scrollTo(どこに, スムーズに戻すかどうか, "要素の位置 画面の位置"(ScrollTriggerと同じ))
+    // scrollTo(どこに, スムーズかどうか, "要素の位置 画面の位置"(ScrollTriggerと同じ))
     if (immediate) this.s?.scrollTo(0, false, "top top") // 即時に戻す
     else this.s?.scrollTop(0) // スムーズに戻る
   }

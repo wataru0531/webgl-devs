@@ -41,7 +41,7 @@ class App {
 
     this.scroll = new Scroll(); // ScrollSmoother初期化、スクロール量を取得
     this.canvas = new Canvas(); // Canvas、テクスチャ関係
-    this.textAnimation = new TextAnimation(); // ⭐️ ここから
+    this.textAnimation = new TextAnimation();
     this.loadFont(() => { // フォント反映、レイアウト確定、ScrollTrigger確定などを持って発火
       this.textAnimation.init();
     });
