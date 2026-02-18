@@ -52,7 +52,7 @@ class App {
     this.loadImages(() => {
       this.canvas.createMedias(); // テクスチャ生成、ScrollTriggerで監視
 
-      if(this.fontLoaded) {
+      if(this.fontLoaded) { // → フォントが読み込まれている場合
         this.textAnimation.init();
         this.textAnimation.animateIn();
       } else {
@@ -329,17 +329,20 @@ class App {
     ScrollTrigger.refresh(); // スクロールや要素の位置を再計算
   }
 
+
   // ✅ フォントの読み込み後に発火
   // → webフォントの読み込み前にGSAPのテキスト分割をするとずれてしまう可能性があるため
   loadFont(onLoaded: () => void) {
     const satoshi = new FontFaceObserver('Satoshi');
 
+    // フォントの読み込みを待つ。CSSでの読み込みも監視している。
     satoshi.load().then(() => {
-      onLoaded(); // this.textAnimation.init()のコールバック
+      onLoaded(); // this.textAnimation.init()。コールバック
       this.fontLoaded = true;
       window.dispatchEvent(new Event('fontLoaded'));
-      // → windowに対して「fontLoaded」というイベントを作り、発生させる。
+      // → windowに対して「fontLoaded」というカスタムイベントを作る
       // new Event() ... カスタムイベント(自分で作ったオリジナルのイベント)
+      // dispatchEvent() → 実行させる
     });
   }
 

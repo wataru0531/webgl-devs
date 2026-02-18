@@ -34,7 +34,9 @@ export default class TextAnimation {
 
     // ✅ 一度unknown(型不明)にキャスト → そのunknownをHTMLElement[]として扱う
     //    querySelectorAll('div')の型は、NodeListOf<HTMLDivElement>。
-    //    NodeListOf<HTMLDivElement>を直接、HTMLDivElement[]に変換できないので、unknownを経由して無理やり変換。
+    //    NodeListOf<HTMLDivElement>を直接、HTMLElement[]にキャストできないので、
+    //    unknownを経由して無理やり変換。
+    //    → 一度「型不明」にする → そこから好きな型に変換
     this.elements = document.querySelectorAll('[data-text-animation]') as unknown as HTMLElement[];
 
     this.elements.forEach((el) => {
@@ -61,7 +63,7 @@ export default class TextAnimation {
           gsap.set(line, { yPercent: 100 });
         });
 
-        gsap.set(el, { autoAlpha: 1, visibility: 'visible' });
+        gsap.set(el, { autoAlpha: 1 }); // opacity: 1; + visibility: hidden;
 
         this.splitAnimations.push({
           element: el, // [data-text-animation]をもつ
@@ -76,7 +78,7 @@ export default class TextAnimation {
       } else {
         // テキスト分割させない場合
         // console.log("テキスト分割させない場合");
-        gsap.set(el, { autoAlpha: 0, visibility: 'hidden' }); // → 後から表示させる
+        gsap.set(el, { autoAlpha: 0 }); // → 後から表示させる
 
         this.fadeAnimations.push({
           element: el,
@@ -91,7 +93,7 @@ export default class TextAnimation {
   // ✅ 分割したテキストをアニメーションさせる場合 → スクロールにより表示
   animateIn({ delay = 0 } = {}) {
     this.splitAnimations.forEach(({ element, split, inDuration, inStagger, inDelay }) => {
-      // console.log(element); // 1 2 3
+      // console.log(element); // [data-text-animation] を持つ要素
       const tweenWithScroll = gsap.to(split.lines, {
         yPercent: 0,
         stagger: inStagger,
@@ -101,6 +103,7 @@ export default class TextAnimation {
           end: 'bottom top',
           toggleActions: 'play reset restart reset',
           // → enter leave enterback leaveback の時の挙動を1つづつ記述
+          //   ... leaveback: 一度抜けて画面に入り、さらに上に抜けた時
           // play ... 入ると発火
           // reset ... 最初の状態に戻す
           // restart ... 最初から再生
@@ -118,12 +121,11 @@ export default class TextAnimation {
       this.splitTweens.push(tweenWithScroll);
     });
 
-    // Fade animations → テキスト分割しなかった要素を対象にしたアニメーション
+    // ✅ テキスト分割しなかった要素を対象にしたアニメーション
     this.fadeAnimations.forEach(({ element, inDuration, inDelay }) => {
       const fadeTween = gsap.to(element, {
         // onStart: () => console.log("onStart"),
-
-        autoAlpha: 1,
+        autoAlpha: 1, // opacity: 1; + visibility: hidden;
         scrollTrigger: {
           trigger: element,
           start: 'top bottom',
@@ -137,6 +139,7 @@ export default class TextAnimation {
 
       this.fadeTweens.push(fadeTween);
     });
+    
     return gsap.timeline();
   }
 
@@ -144,7 +147,7 @@ export default class TextAnimation {
   animateOut() {
     const tl = gsap.timeline();
 
-    // Split animations
+    // ✅ 分割したテキスト
     this.splitAnimations.forEach(({ split, outDuration, outStagger }) => {
       tl.to(split.lines, {
         yPercent: 100,
@@ -154,7 +157,7 @@ export default class TextAnimation {
       }, 0);
     });
 
-    // Fade animations
+    // ✅ 分割しなかったテキスト
     this.fadeAnimations.forEach(({ element, outDuration }) => {
       tl.to(element, {
         autoAlpha: 0,
