@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page Transitions with WebGPU and VanillaJS</title>
+  <meta name="description" content="We build a SPA with VanillaJS and pair it with WebGPU for interactive page transitions." />
+  <link rel="icon" type="image/svg+xml" href="https://tympanus.net/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="https://tympanus.net/favicon/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="src/global.css" />
+  <script>
+    document.documentElement.className = 'js';
+  </script>
+</head>
+
+<body>
+
+  <div id="preloader">
+    <span class="preloader-count">0%</span>
+  </div>
+  
+  <nav id="nav">
+    <a href="/" data-link data-nav-key="main">Selected</a>
+    <a href="/index" data-link data-nav-key="index">Index</a>
+  </nav>
+
+  <main id="app"></main>
+  
+  <div id="cursor"></div>
+
+  <footer id="footer">
+    <a href="https://benpaine.com" target="_blank" rel="noopener noreferrer">BNPNE</a>
+    <div>
+      <a href="https://tympanus.net/codrops/?p=116944" target="_blank" rel="noopener noreferrer">Tutorial</a>
+      <a href="https://github.com/bnpne/page-transitions-with-webgpu-vanilla-js" target="_blank" rel="noopener noreferrer">Source</a>
+      <a href="https://tympanus.net/codrops/hub" target="_blank" rel="noopener noreferrer">All demos</a>
+    </div>
+
+  </footer>
+  <script type="module" src="src/index.js"></script>
+</body>
+
+</html>

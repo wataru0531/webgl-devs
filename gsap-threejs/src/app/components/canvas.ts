@@ -21,7 +21,7 @@ export default class Canvas {
   sizes: Size // ワールド座標の幅、高さ
   dimensions: Dimensions
   medias: (Media | null)[] | null
-
+  
   constructor() {
     // 👉 getElementByIdは、HTMLElement | null のどちらかを返すので型アサーションが必須
     this.element = document.getElementById("webgl") as HTMLCanvasElement;
@@ -88,7 +88,7 @@ export default class Canvas {
   onResize() {
     ScrollTrigger.refresh(); // 👉 スクロール位置・要素サイズ・トリガー位置を全て再計算
 
-    this.dimensions = { // 👉 ブラウザの大きさ
+    this.dimensions = { // ビューポートデータを更新
       width: window.innerWidth,
       height: window.innerHeight,
       pixelRatio: Math.min(2, window.devicePixelRatio),
@@ -96,7 +96,7 @@ export default class Canvas {
 
     this.camera.aspect = window.innerWidth / window.innerHeight
     this.camera.updateProjectionMatrix()
-    this.setSizes(); // 👉 ワールド座標の幅、高さを再取得
+    this.setSizes(); // 👉 this.sizesを更新。ワールド座標の幅、高さを再取得
 
     this.renderer.setPixelRatio(this.dimensions.pixelRatio)
     this.renderer.setSize(this.dimensions.width, this.dimensions.height)
@@ -106,14 +106,15 @@ export default class Canvas {
     })
   }
 
-  // ✅ テクスチャ生成
+
+  // ✅ Media初期化、テクスチャ生成
   createMedias(activeElement?: HTMLImageElement) {
     const images = document.querySelectorAll("img");
 
     images.forEach((image) => {
       // console.log(image)
       if(image !== activeElement) {
-        // ⭐️ 画像、Meshなどをもつオブジェクトを生成
+        // ⭐️ Media初期化、画像、Meshなどをもつオブジェクトを生成
         const media = new Media({
           element: image,
           scene: this.scene,
@@ -136,7 +137,7 @@ export default class Canvas {
   render(scroll: number, updateScroll: boolean = true) {
     // console.log(scroll, updateScroll); // 遷移時はfalse
     this.medias?.forEach((media) => {
-      if (updateScroll) {
+      if(updateScroll) {
         media?.updateScroll(scroll)
       }
     })

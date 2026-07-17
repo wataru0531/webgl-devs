@@ -1,0 +1,367 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: #ffffff;
+  width: 100%;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Intro overlay: covers the page on first load while the 0–100% counter runs,
+   then fades away (see Preloader) before the page intro plays. */
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #ffffff;
+}
+
+.preloader-count {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  color: #111;
+  font-variant-numeric: tabular-nums;
+}
+
+#cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 1px solid #111;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transition:
+    width 0.3s cubic-bezier(0.65, 0, 0.35, 1),
+    height 0.3s cubic-bezier(0.65, 0, 0.35, 1),
+    border-radius 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+#cursor::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #111;
+  border-radius: 0;
+  opacity: 0;
+  z-index: -1;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  transition:
+    opacity 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+    transform 0.35s cubic-bezier(0.65, 0, 0.35, 1),
+    border-radius 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+}
+
+#cursor.is-hover {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+#cursor.is-hover::after {
+  border-radius: 50%;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(0.7);
+}
+
+@media (hover: none) {
+  #cursor {
+    display: none;
+  }
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+body {
+  color: #111;
+}
+
+/* Hidden until the first-load intro reveals them (see _playIntro). Prevents a
+   flash of resting nav/footer text while textures load before the intro runs. */
+html.js #nav a,
+html.js #footer a {
+  opacity: 0;
+}
+
+#nav {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  z-index: 200;
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+#nav a:not(:last-child)::after {
+  content: ",";
+  margin-left: 0.05rem;
+}
+
+.page-title {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 10;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: #111;
+  opacity: 0.5;
+  pointer-events: none;
+  margin: 0;
+}
+
+#nav a {
+  position: relative;
+  color: #111;
+  text-decoration: none;
+  pointer-events: auto;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+#nav a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.45s cubic-bezier(0.77, 0, 0.18, 1);
+  pointer-events: none;
+}
+
+#nav a:hover::before,
+#nav a.is-active::before {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+.inner-fact {
+  position: fixed;
+  top: 10rem;
+  left: 1.5rem;
+  z-index: 10;
+  max-width: 16rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: #111;
+  pointer-events: none;
+  margin: 0;
+}
+
+#nav a:hover,
+#nav a.is-active {
+  opacity: 1;
+}
+
+#footer {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+#footer a {
+  position: relative;
+  color: #111;
+  text-decoration: none;
+  pointer-events: auto;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+#footer a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.45s cubic-bezier(0.77, 0, 0.18, 1);
+  pointer-events: none;
+}
+
+#footer a:hover::before {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+#footer a:hover {
+  opacity: 1;
+}
+
+#footer div a:not(:last-child)::after {
+  content: ",";
+  margin-left: 0.05rem;
+}
+
+#gpu-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  display: block;
+  pointer-events: none;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  pointer-events: none;
+}
+
+.page-main .slot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 23vw;
+  display: block;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.page-main .slot figure {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-main .slot-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding-top: 0.5rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  color: #111;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.page-main .slot-0 {
+  aspect-ratio: 4907 / 7360;
+}
+.page-main .slot-1 {
+  aspect-ratio: 6000 / 4000;
+}
+.page-main .slot-2 {
+  aspect-ratio: 3634 / 5998;
+}
+.page-main .slot-3 {
+  aspect-ratio: 3769 / 5025;
+}
+.page-main .slot-4 {
+  aspect-ratio: 6804 / 4104;
+}
+
+.page-inner .stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  width: 100%;
+  padding-top: calc((100vh - var(--cell-h)) / 2);
+  padding-bottom: calc((100vh - var(--cell-h)) / 2);
+}
+
+.page-inner .slot {
+  width: 23vw;
+  display: block;
+  flex-shrink: 0;
+}
+
+.page-inner .slot figure {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-inner[data-image="0"] .slot {
+  aspect-ratio: 4907 / 7360;
+}
+.page-inner[data-image="1"] .slot {
+  aspect-ratio: 6000 / 4000;
+}
+.page-inner[data-image="2"] .slot {
+  aspect-ratio: 3634 / 5998;
+}
+.page-inner[data-image="3"] .slot {
+  aspect-ratio: 3769 / 5025;
+}
+.page-inner[data-image="4"] .slot {
+  aspect-ratio: 6804 / 4104;
+}
+
+.page-inner[data-image="0"] {
+  --cell-h: calc(23vw * 7360 / 4907);
+}
+.page-inner[data-image="1"] {
+  --cell-h: calc(23vw * 4000 / 6000);
+}
+.page-inner[data-image="2"] {
+  --cell-h: calc(23vw * 5998 / 3634);
+}
+.page-inner[data-image="3"] {
+  --cell-h: calc(23vw * 5025 / 3769);
+}
+.page-inner[data-image="4"] {
+  --cell-h: calc(23vw * 4104 / 6804);
+}

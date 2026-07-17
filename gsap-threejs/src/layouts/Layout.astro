@@ -30,7 +30,19 @@ const { uid, template } = Astro.props
     <title>WebGL Pixel Effect on Scroll with GSAP, Three.js and Astro</title>
     
   </head>
+  <!-- wrapper → Barbaの全体のラッパー -->
   <body data-barba="wrapper">
+    <!-- 
+      container → Barba が差し替え対象として認識する要素 
+      この場合は、id="app" が対象
+      
+      ⭐️ Barba は container 自体を置き換える ので：
+      ・id="app" がまるごと差し替え対象
+      ・よって smooth-content も差し替えられる
+      ・slot 内の要素も同時に差し替えられる
+
+      つまり、Barbaは container 配下すべてを置き換える 動きとなる
+    -->
     <div id="app" data-barba="container" data-barba-namespace={uid}>
       <div id="smooth-content" data-page-template={template}>
         <!-- ✅ slot → Layoutで渡された子要素を挿入する -->

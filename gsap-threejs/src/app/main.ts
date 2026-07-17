@@ -23,6 +23,7 @@ import FontFaceObserver from 'fontfaceobserver';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Flip, SplitText);
 
+
 class App {
   canvas: Canvas;
   scroll: Scroll;
@@ -35,7 +36,7 @@ class App {
   fontLoaded: boolean = false;
 
   constructor() {
-    if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+    if(typeof history !== 'undefined' && 'scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
 
@@ -48,7 +49,7 @@ class App {
 
     this.template = this.getCurrentTemplate(); // home detail
 
-    // ✅ 
+    // ✅ Media初期化、テクスチャ生成、
     this.loadImages(() => {
       this.canvas.createMedias(); // テクスチャ生成、ScrollTriggerで監視
 
@@ -76,22 +77,35 @@ class App {
 
     // ✅ Barba
     // → ページをリロードせずに、HTMLだけ差し替えてアニメーション付きで遷移させるライブラリ
+    // ⭐️ Barbaの挙動
+    // クリック
+    //   ↓
+    // before        ← ページ遷移開始直前のタイミング(まだ旧ページ）
+    //   ↓
+    // leave         ← 旧ページをアニメーションで消すタイミング
+    //   ↓
+    // BarbaがDOM取得・差し替え
+    //   ↓
+    // beforeEnter   ← 新ページがDOMに挿入された直後のタイミング
+    //   ↓
+    // after         ← ページ遷移が確定してユーザーが操作可能になったタイミング(新ページ確定)
     barba.init({
-      prefetchIgnore: true,
+      prefetchIgnore: true, // リンクにマウスを乗せた時などに、遷移先ページのHTMLを事前取得しておく機能を無効化
       transitions: [
         {
-          name: 'default-transition', // 通常のページ遷移 ... 特別な条件がない通常の遷移
-          before: () => {
+          name: 'default-transition', // 通常のページ遷移 ... 戻る時。特別な条件がない通常の遷移
+          before: () => { // ✅ ページ遷移開始直前
+            // console.log("before")
             this.scrollBlocked = true; // スクロールを止める
             this.scroll.s?.paused(true); // ScrollSmoother 停止
           },
-          leave: () => { // 👉 戻る時に発火
-            const medias = this.canvas.medias && this.canvas.medias; // ⭐️ 文法
-            // console.log(medias)
+          leave: () => { // ✅ 旧ページをアニメーションで消すタイミング
+            const medias = this.canvas.medias;
+            // console.log(medias); // [Media]
 
             medias?.forEach((media) => {
-              if (!media) return;
-              media.onResize(this.canvas.sizes); // リサイズ処理
+              if(!media) return;
+              media.onResize(this.canvas.sizes); // リサイズ処理。キャンバスのサイズ、画像の位置などを更新
 
               gsap.set(media.element, { // 
                 visibility: 'hidden',
@@ -103,35 +117,37 @@ class App {
               // 画面からテキストを消すtl
               const tl = this.textAnimation.animateOut();
 
-              // 👉 テクスチャのuniform.uProgress 更新
+              // ⭐️ テクスチャのuniform.uProgress 1 → 0
               this.canvas.medias?.forEach((media) => {
-                if (!media) return;
+                if(!media) return;
                 tl.fromTo(media.material.uniforms.uProgress,
                   { value: 1 },
                   {
+                    value: 0,
                     duration: 1,
                     ease: 'linear',
-                    value: 0,
                   }, 0);
               });
 
-              tl.call(() => {
+              tl.call(() => { // tweenやScrollTriggerを解除
                 this.textAnimation.destroy();
                 resolve();
               });
             });
           },
-          // ✅ 
+          // ✅ 新ページがDOMに挿入された直後のタイミング
+          //   → = まだ新ページの初期化はしていない段階
+          //   → ここでは、旧ページの状態を完全に破棄する
           beforeEnter: () => {
             this.canvas.medias?.forEach((media) => {
-              media?.destroy();
+              media?.destroy(); // sceneなどの削除、ScrollTriggerやイベントの解除
               media = null;
             });
 
-            this.scrollBlocked = false;
+            this.scrollBlocked = false; // スクロール開始
 
-            this.scroll.reset();
-            this.scroll.destroy();
+            this.scroll.reset(); // scrollToでトップに
+            this.scroll.destroy(); // ScrollSmootherを完全削除
           },
           // ✅ 新しいページのDOMに合わせて再構築
           after: () => {
@@ -141,63 +157,74 @@ class App {
             const template = this.getCurrentTemplate();
             this.setTemplate(template);
 
-            this.loadImages(() => {
-              this.canvas.medias = [];
-              this.canvas.createMedias();
+            this.loadImages(() => {  // 画像のロードが完了したら発火
+              this.canvas.medias = []; // Media を格納する配列
+              this.canvas.createMedias(); // Media初期化、テクスチャ生成
               this.textAnimation.animateIn({ delay: 0.3 });
             });
           },
         },
 
+        // ⭐️ homeページ - detailページ に遷移する時の挙動
         // ⭐️ Barbaの挙動
         // クリック
         //   ↓
-        // before        ← 遷移開始直前（まだ旧ページ）
+        // from          ← 遷移を開始する前のタイミング。beforeよりも前
+        //                 どんな状態のページから遷移する時に、この transition を使うか？
+        //                 を定義するための設定
         //   ↓
-        // leave         ← 旧ページをアニメーションで消す
+        // before        ← ページ遷移開始直前のタイミング(まだ旧ページ）
         //   ↓
-        // Barbaが新HTMLを取得・差し替え
+        // leave         ← 旧ページをアニメーションで消すタイミング
         //   ↓
-        // beforeEnter   ← 新ページがDOMに入った直後
+        // BarbaがDOMを取得・差し替え
         //   ↓
-        // after         ← 遷移完了（新ページ確定）
+        // beforeEnter   ← 新ページがDOMに挿入された直後のタイミング
+        //   ↓
+        // after         ← ページ遷移が確定してユーザーが操作可能になったタイミング(新ページ確定)
         {
-          name: 'home-detail', // ⭐️ homeページ - detailページ に遷移する時の挙動
+          name: 'home-detail', 
           from: {
-            custom: () => {
+            // ✅ custom → 自分で条件を自由に書ける関数
+            //             true → このtransitionを使う
+            //             false → このtransitionは使わない 
+            custom: () => { 
               const activeLink = document.querySelector('a[data-home-link-active="true"]');
-              // console.log(activeLink); // クリックしたaタグ
-              if (!activeLink) return false;
+              // console.log(activeLink); // クリックしたaタグ → クリックしたら付与される
+              if(!activeLink) return false;
 
               return true;
             },
           },
-          // ✅ 遷移開始前
-          before: () => {
-            this.scrollBlocked = true;
-            this.scroll.s?.paused(true);
+          before: () => { // ✅ 遷移開始前
+            this.scrollBlocked = true; // スクロール停止
+            this.scroll.s?.paused(true); // ScrollSmoother停止
 
-            const tl = this.textAnimation.animateOut();
+            const tl = this.textAnimation.animateOut(); // 👉 テキストを消す。これにアニメーションを連結させていく
 
             activeLinkImage = document.querySelector('a[data-home-link-active="true"] img') as HTMLImageElement;
 
             this.canvas.medias?.forEach((media) => {
               if(!media) return;
-              media.scrollTrigger.kill();
+              media.scrollTrigger.kill(); // ScrollTriggerの監視を停止
 
               const currentProgress = media.material.uniforms.uProgress.value;
+              // console.log(currentProgress);
               const totalDuration = 1.2;
 
-              if(media.element !== activeLinkImage) {
-                const remainingDuration = totalDuration * currentProgress;
+              // console.log(media.element, activeLinkImage);
+              if(media.element !== activeLinkImage) { // 👉 クリックした画像以外の画像
+                // console.log("!==")
+                const remainingDuration = totalDuration * currentProgress; // 0 〜 1.2
 
                 tl.to(media.material.uniforms.uProgress, {
                   duration: remainingDuration,
                   value: 0,
                   ease: 'linear',
                 }, 0);
-              } else {
-                const remainingDuration = totalDuration * (1 - currentProgress);
+              } else { // クリックした画像
+                // console.log("===")
+                const remainingDuration = totalDuration * (1 - currentProgress); // 1.2 → 0
 
                 tl.to(media.material.uniforms.uProgress, {
                   value: 1,
@@ -212,6 +239,7 @@ class App {
               }
             });
 
+            // ✅ Promiseを返せば、内部でBarbaが待ってくれる仕組み
             return new Promise<void>((resolve) => {
               tl.call(() => {
                 resolve();
@@ -219,21 +247,32 @@ class App {
             });
           },
           leave: () => { // ✅ 旧ページをアニメーションで消す
-            scrollTop = this.scroll.getScroll();
+            // ↓ 旧ページの要素を固定していく
+            scrollTop = this.scroll.getScroll(); // 現在のスクロール量を取得
 
             const container = document.querySelector('.container') as HTMLElement;
+            // console.log(container)
             container.style.position = 'fixed';
             container.style.top = `-${scrollTop}px`;
             container.style.width = '100%';
             container.style.zIndex = '1000';
 
+            // 👉 クリックした画像の位置などの状態を保存
+            // ✅ FLIP
+            // First → 旧ページでの位置を保存
+            // Last → 新ページでの位置（append後）
+            // Invert → 差分を計算
+            // Play → アニメーション
             this.mediaHomeState = Flip.getState(activeLinkImage);
-            this.textAnimation.destroy();
+            this.textAnimation.destroy(); // tweenやScrollTriggerを解除
           },
-          // ⭐️ ここで、Barbaが新しいHTMLに差し替える
+
+          // ⭐️ ここで、Barbaが自動で新しいページのHTMLを読み込む。
+          //    .containerを差し替える
+
           beforeEnter: () => { // ✅ 新ページがDOMに入った直後
-            this.scroll.reset();
-            this.scroll.destroy();
+            this.scroll.reset(); // トップに移動させる。scrollTop(0)
+            this.scroll.destroy(); // ScrollSmoother を解除
           },
           after: () => { // ✅ 遷移完了(新ページ確定)
             this.scroll.init();
@@ -242,6 +281,7 @@ class App {
             const detailContainer = document.querySelector('.details-container') as HTMLElement;
 
             detailContainer.innerHTML = '';
+            // ⭐️ detailページに移動させる
             detailContainer.append(activeLinkImage);
 
             const template = this.getCurrentTemplate();
@@ -252,20 +292,22 @@ class App {
 
               this.textAnimation.animateIn({ delay: 0.3 });
 
+              // ⭐️ さっき保存した位置(First)から、今の位置(Last)へアニメーションしてくれと命令
               Flip.from(this.mediaHomeState, {
                 absolute: true,
-
                 duration: 1,
                 ease: 'power3.inOut',
-
                 onComplete: () => {
                   this.scrollBlocked = false;
                   this.canvas.medias?.forEach((media) => {
-                    if (!media) return;
-                    if (media.element !== activeLinkImage) {
+                    if(!media) return;
+
+                    if(media.element !== activeLinkImage) {
+                      // クリックした画像以外
                       media.destroy();
                       media = null;
                     } else {
+                      // クリックした画像をactiveに
                       activeMedia = media;
                     }
                   });
@@ -329,7 +371,6 @@ class App {
     ScrollTrigger.refresh(); // スクロールや要素の位置を再計算
   }
 
-
   // ✅ フォントの読み込み後に発火
   // → webフォントの読み込み前にGSAPのテキスト分割をするとずれてしまう可能性があるため
   loadFont(onLoaded: () => void) {
@@ -354,5 +395,6 @@ class App {
     this.canvas.render(this.scrollTop, !this.scrollBlocked);
   }
 }
+
 
 export default new App();

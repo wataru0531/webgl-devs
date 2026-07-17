@@ -1,6 +1,5 @@
 
-
-
+// app/types/types.ts
 
 export interface Size {
   width: number

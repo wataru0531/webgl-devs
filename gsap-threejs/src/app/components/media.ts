@@ -2,7 +2,7 @@
 // ✅ media.ts
 
 // const media = new Media({
-//   element: image,
+//   element: image, → 画像
 //   scene: this.scene,
 //   sizes: this.sizes,
 // })
@@ -30,10 +30,11 @@ interface Props {
   sizes: Size 
 }
 
+
 export default class Media {
   element: HTMLImageElement // 画像
-  scene: Scene
-  sizes: Size // 描画の範囲(ワールド座標)
+  scene: Scene // シーン
+  sizes: Size // ワールド座標の幅、縦のサイズ
 
   anchorElement: HTMLAnchorElement | undefined
   material: ShaderMaterial
@@ -54,7 +55,7 @@ export default class Media {
     this.element = element; // 画像 img要素
     this.anchorElement = this.element.closest("a") as HTMLAnchorElement | undefined
     // console.log(this.anchorElement); // 親要素のaタグを取得
-    this.scene = scene
+    this.scene = scene // シーン
     this.sizes = sizes // ワールド座標
 
     this.currentScroll = 0
@@ -98,7 +99,7 @@ export default class Media {
         uContainerRes: new Uniform(new Vector2(0, 0)), // html上の画像の幅、高さ
         uProgress: new Uniform(0),
         uGridSize: new Uniform(20),
-        uColor: new Uniform(new Color("#242424")),
+        uColor: new Uniform(new Color("#ff0000")),
       },
     })
   }
@@ -124,11 +125,9 @@ export default class Media {
   setMeshDimensions() {
     // console.log(this.sizes.width); // 11.399472430513804 → ワールド座標でのポイント
     this.meshDimensions = {
-      // 👉 (画像の幅 / 画面の幅) * ワールド座標の幅に変形
-      //    → 画面の幅に対する画像の幅の割合を算出 
-      //    → ワールド座標の幅にかけれて、ワールド座標での比率を算出
-      width: (this.nodeDimensions.width * this.sizes.width) / window.innerWidth,
-      height: (this.nodeDimensions.height * this.sizes.height) / window.innerHeight,
+      // ワールド座標のwidth * (img要素のwidth / 画面の幅)
+      width: this.sizes.width * (this.nodeDimensions.width / window.innerWidth),
+      height: this.sizes.height * (this.nodeDimensions.height / window.innerHeight),
     }
 
     // console.log(this.meshDimensions.width, this.meshDimensions.height); 
@@ -230,7 +229,7 @@ export default class Media {
     this.material.dispose()
   }
 
-  // ✅ 
+  // ✅ キャンバスのサイズ、画像の位置などを更新
   onResize(sizes: Size) { // canvas.size
     this.sizes = sizes
 

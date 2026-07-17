@@ -14,18 +14,17 @@ export default class Scroll {
     this.init();
   }
 
-  // ✅ 初期化処理
+  // ✅ 初期化
   init() {
-    this.scroll = 0; // 初期値。現在スクロール値を初期化
+    this.scroll = 0;
 
     // 👉 ScrollSmoother
     this.s = ScrollSmoother.create({
       smooth: 1,
       normalizeScroll: true, // マウス、トラックパッド、タッチなど、デバイス差を吸収して、スクロール量を標準化
       wrapper: document.getElementById("app") as HTMLElement, // ラッパー。ここを基準に制御する
-      content: document.getElementById("smooth-content") as HTMLElement, // コンテンツ部分
+      content: document.getElementById("smooth-content") as HTMLElement, // コンテンツ部分で、スクロールさせる部分
       
-      // 毎フレーム、スクロールするたびに発火する。
       onUpdate: (self) => {
         // console.log(self.scrollTop()); // スクロール量を取得
         this.scroll = self.scrollTop() // 常に現在位置を取得する
@@ -34,7 +33,7 @@ export default class Scroll {
     })
 
     ScrollTrigger.refresh(); // ScrollTriggerに「レイアウト再計算を通知。
-                            // これをしないとtrigger位置がズレる。
+                            // → triggerの位置、startの位置などを再度把握する
   }
 
   // スクロールをトップに戻す
