@@ -120,8 +120,9 @@ export default class Media {
     }
   }
 
+
   // ✅ 画面の幅/高さに対する画像の幅の割合を算出して、ワールド座標の幅/高さにかけることで
-  // ⭐️ ワールド座標におけるメッシュの比率を算出
+  // ⭐️ ワールド座標におけるメッシュのサイズの割合を算出
   setMeshDimensions() {
     // console.log(this.sizes.width); // 11.399472430513804 → ワールド座標でのポイント
     this.meshDimensions = {
@@ -140,12 +141,15 @@ export default class Media {
   setMeshPosition() {
     // ワールド座標でのleft、topからの距離の割合を算出
     this.meshPosition = {
-      x: (this.elementBounds.left * this.sizes.width) / window.innerWidth,
-      y: (-this.elementBounds.top * this.sizes.height) / window.innerHeight,
+      // ワールド座標のwidth * (img要素の左からの距離 / 画面の幅)
+      x: this.sizes.width * (this.elementBounds.left / window.innerWidth),
+      y: this.sizes.height * -(this.elementBounds.top / window.innerWidth),
     }
 
     this.meshPosition.x -= this.sizes.width / 2; // 左にずらす
     this.meshPosition.x += this.meshDimensions.width / 2; // meshの原点を「左端」から「中央」に移動
+                                                          // → ブラウザ座標では、要素の位置は左端から計算
+                                                          //   ワールド座標では、メッシュの位置は中央から計算するため
 
     this.meshPosition.y += this.sizes.height / 2;
     this.meshPosition.y -= this.meshDimensions.height / 2;
@@ -162,18 +166,19 @@ export default class Media {
         const { naturalWidth, naturalHeight } = image;
         // console.log(naturalWidth, naturalHeight); // 画像のもともとの大きさ
 
-        this.material.uniforms.uResolution.value = new Vector2(
-          naturalWidth,
-          naturalHeight,
-        )
+        this.material.uniforms.uResolution.value = new Vector2(naturalWidth, naturalHeight);
 
         this.material.uniforms.uContainerRes.value = new Vector2(
-          this.nodeDimensions.width, // html上の幅
+          this.nodeDimensions.width, // img要素のhtml上の幅
           this.nodeDimensions.height,
-        )
+        );
+        // console.log(this.material.uniforms.uContainerRes.value);
       },
     )
   }
+
+  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
 
   // ✅ Canvasのrenderで発火
   updateScroll(scrollY: number) {
@@ -181,7 +186,7 @@ export default class Media {
     // console.log(this.sizes.height); // 15.346539759579208
     // console.log(-scrollY / window.innerHeight); // 画面に対するスクロールの割合
     // → ⭐️ それを、this.sizes.height(ワールド座標)にかけることでワールド座標の移動量を算出
-    this.currentScroll = (-scrollY * this.sizes.height) / window.innerHeight;
+    this.currentScroll = this.sizes.height * (-scrollY / window.innerHeight);
     // console.log(this.currentScroll);
 
     // 👉 前フレームからどれだけスクロール量が変化したか。
