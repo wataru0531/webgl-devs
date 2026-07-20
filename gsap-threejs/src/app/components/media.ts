@@ -66,7 +66,7 @@ export default class Media {
     this.createMaterial()
     this.createMesh()
     this.setNodeBounds() // 👉 画像の位置情報などを取得
-    this.setMeshDimensions()
+    this.setMeshDimensions() // ワールド座標におけるメッシュのサイズの割合を算出
     this.setMeshPosition()
     this.setTexture(); // テクスチャを生成、元の画像のサイズ取得、uniformに格納
 
@@ -177,9 +177,6 @@ export default class Media {
     )
   }
 
-  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-
   // ✅ Canvasのrenderで発火
   updateScroll(scrollY: number) {
     // console.log(scrollY); // スクロール量
@@ -194,7 +191,7 @@ export default class Media {
     // console.log(deltaScroll);
     this.lastScroll = this.currentScroll;
 
-    this.updateY(deltaScroll);
+    this.updateY(deltaScroll); // ワールド座標を動かすというよりも、メッシュを動かす
   }
 
   // ✅ meshのy軸をスクロールに合わせて動かす。
@@ -206,6 +203,7 @@ export default class Media {
   }
 
   // ✅ uProgressの値を0 〜 1に
+  //    → 要素が入ってきて出ていく間
   observe() {
     this.scrollTrigger = gsap.to(this.material.uniforms.uProgress, {
       value: 1,
@@ -214,6 +212,14 @@ export default class Media {
         start: "top bottom",
         end: "bottom top",
         toggleActions: "play reset restart reset",
+        // → onEnter onLeave onEnterBack onLeaveBack の順番に並んでいて、
+        // 　その時にどうするかを設定してる
+
+        // 状態	          意味	                            このコード
+        // onEnter	    上からスクロールして start に入った時	  play
+        // onLeave	    さらに下へ進み end を超えた時	         reset
+        // onEnterBack	下から上へ戻って end に入った時	       restart
+        // onLeaveBack	さらに上へ進み start を超えた時	       reset
       },
       duration: 1.6,
       ease: "linear",

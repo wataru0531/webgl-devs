@@ -107,15 +107,14 @@ export default class Canvas {
   }
 
 
-  // ✅ Media初期化、テクスチャ生成
+  // ⭐️ Media初期化、テクスチャ生成
   createMedias(activeElement?: HTMLImageElement) {
     const images = document.querySelectorAll("img");
 
     images.forEach((image) => {
       // console.log(image)
       if(image !== activeElement) {
-        // ⭐️ Media初期化、画像、Meshなどをもつオブジェクトを生成
-        const media = new Media({
+        const media = new Media({ // ⭐️ Media初期化、画像、Meshなどをもつオブジェクトを生成
           element: image,
           scene: this.scene,
           sizes: this.sizes,
