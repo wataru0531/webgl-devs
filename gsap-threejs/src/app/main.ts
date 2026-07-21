@@ -340,7 +340,7 @@ class App {
   // ✅ 画像を読み込み後に発火させる
   loadImages(callback?: () => void) {
     const medias = document.querySelectorAll('img');
-    let loadedImages = 0;
+    let loadedImages = 0; // ロードした画像の枚数
     const totalImages = medias.length;
 
     medias.forEach((img) => {
@@ -365,11 +365,15 @@ class App {
     }
   }
 
-  // ✅ 
+  // ✅ 画像読み込み後に要素の位置が変わる可能性があるので、ScrollTriggerに再計算させる
   onReady(callback?: () => void) {
     if(callback) callback();
     ScrollTrigger.refresh(); // スクロールや要素の位置を再計算
   }
+
+  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
 
   // ✅ フォントの読み込み後に発火
   // → webフォントの読み込み前にGSAPのテキスト分割をするとずれてしまう可能性があるため

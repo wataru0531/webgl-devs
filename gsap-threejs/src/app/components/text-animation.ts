@@ -49,10 +49,10 @@ export default class TextAnimation {
       if(el.hasAttribute('data-text-animation-split')) {
         // console.log("data-text-animation-split");
 
-        const split = SplitText.create(el, {
+        const split = SplitText.create(el, { // ラインに分割
           type: 'lines',
           mask: 'lines',
-          autoSplit: true,
+          autoSplit: true, // レイアウトが変わった時に自動で分割させる
         });
 
         const inStagger = parseFloat(el.getAttribute('data-text-animation-in-stagger') || '0.06');
@@ -88,6 +88,8 @@ export default class TextAnimation {
         });
       }
     });
+
+    // console.log(this.fadeAnimations); // (9) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
   }
 
   // ✅ 分割したテキストをアニメーションさせる場合 → スクロールにより表示
@@ -102,8 +104,8 @@ export default class TextAnimation {
           start: 'top bottom',
           end: 'bottom top',
           toggleActions: 'play reset restart reset',
-          // → enter leave enterback leaveback の時の挙動を1つづつ記述
-          //   ... leaveback: 一度抜けて画面に入り、さらに上に抜けた時
+          // → enter leave enterBack leaveBack の時の挙動を1つづつ記述
+          //   ... leaveBack: 一度抜けて画面に入り、さらに上に抜けた時
           // play ... 入ると発火
           // reset ... 最初の状態に戻す
           // restart ... 最初から再生
@@ -172,8 +174,8 @@ export default class TextAnimation {
   // ✅ テキストアニメーションの解除
   destroy() {
     this.splitTweens.forEach((tween) => {
+      // tweenとScrollTriggerは別のオブジェクトなのでそれぞれ別にkillする
       tween.scrollTrigger?.kill();
-      // 👉 tweenに紐づいているScrollTriggerのイベント(スクロール監視)は残ったままになるので破棄する
       tween.kill();
     });
 
