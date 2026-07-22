@@ -40,8 +40,9 @@ const { uid, template } = Astro.props
       ・id="app" がまるごと差し替え対象
       ・よって smooth-content も差し替えられる
       ・slot 内の要素も同時に差し替えられる
+      → 新しい、containerを生成する仕様
 
-      つまり、Barbaは container 配下すべてを置き換える 動きとなる
+      つまり、Barbaは containerも含めて、配下すべてを置き換える 動きとなる
     -->
     <div id="app" data-barba="container" data-barba-namespace={uid}>
       <div id="smooth-content" data-page-template={template}>

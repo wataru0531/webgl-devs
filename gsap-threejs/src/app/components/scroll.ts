@@ -18,7 +18,7 @@ export default class Scroll {
   init() {
     this.scroll = 0;
 
-    // 👉 ScrollSmoother
+    // ✅ ScrollSmoother
     this.s = ScrollSmoother.create({
       smooth: 1,
       normalizeScroll: true, // マウス、トラックパッド、タッチなど、デバイス差を吸収して、スクロール量を標準化

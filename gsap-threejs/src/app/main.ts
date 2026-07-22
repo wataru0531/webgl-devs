@@ -49,7 +49,7 @@ class App {
 
     this.template = this.getCurrentTemplate(); // home detail
 
-    // ✅ Media初期化、テクスチャ生成、
+    // ✅ Media初期化、テクスチャ生成、テキストアニメーション発火
     this.loadImages(() => {
       this.canvas.createMedias(); // テクスチャ生成、ScrollTriggerで監視
 
@@ -89,12 +89,14 @@ class App {
     // beforeEnter   ← 新ページがDOMに挿入された直後のタイミング
     //   ↓
     // after         ← ページ遷移が確定してユーザーが操作可能になったタイミング(新ページ確定)
+
     barba.init({
       prefetchIgnore: true, // リンクにマウスを乗せた時などに、遷移先ページのHTMLを事前取得しておく機能を無効化
       transitions: [
         {
-          name: 'default-transition', // 通常のページ遷移 ... 戻る時。特別な条件がない通常の遷移
-          before: () => { // ✅ ページ遷移開始直前
+          name: 'default-transition', // 通常のページ遷移用のトランジション
+                                      // ⭐️ detail(詳細ページ)からHomeに戻る時に使う
+          before: () => { // ページ遷移開始直前
             // console.log("before")
             this.scrollBlocked = true; // スクロールを止める
             this.scroll.s?.paused(true); // ScrollSmoother 停止
@@ -107,15 +109,14 @@ class App {
               if(!media) return;
               media.onResize(this.canvas.sizes); // リサイズ処理。キャンバスのサイズ、画像の位置などを更新
 
-              gsap.set(media.element, { // 
+              gsap.set(media.element, { // img要素
                 visibility: 'hidden',
                 opacity: 0,
               });
             });
 
             return new Promise<void>((resolve) => {
-              // 画面からテキストを消すtl
-              const tl = this.textAnimation.animateOut();
+              const tl = this.textAnimation.animateOut(); // テキストを消すtl
 
               // ⭐️ テクスチャのuniform.uProgress 1 → 0
               this.canvas.medias?.forEach((media) => {
@@ -126,7 +127,7 @@ class App {
                     value: 0,
                     duration: 1,
                     ease: 'linear',
-                  }, 0);
+                  }, 0); // tlの先頭から開始
               });
 
               tl.call(() => { // tweenやScrollTriggerを解除
@@ -139,6 +140,7 @@ class App {
           //   → = まだ新ページの初期化はしていない段階
           //   → ここでは、旧ページの状態を完全に破棄する
           beforeEnter: () => {
+            // console.log("beforeEnter")
             this.canvas.medias?.forEach((media) => {
               media?.destroy(); // sceneなどの削除、ScrollTriggerやイベントの解除
               media = null;
@@ -150,11 +152,12 @@ class App {
             this.scroll.destroy(); // ScrollSmootherを完全削除
           },
           // ✅ 新しいページのDOMに合わせて再構築
-          after: () => {
+          after: () => { // 新しいページに着地したとき
             this.scroll.init();
             this.textAnimation.init();
 
             const template = this.getCurrentTemplate();
+            // console.log(template);
             this.setTemplate(template);
 
             this.loadImages(() => {  // 画像のロードが完了したら発火
@@ -165,7 +168,7 @@ class App {
           },
         },
 
-        // ⭐️ homeページ - detailページ に遷移する時の挙動
+        // ⭐️ home → detail に遷移する時の挙動
         // ⭐️ Barbaの挙動
         // クリック
         //   ↓
@@ -183,7 +186,7 @@ class App {
         //   ↓
         // after         ← ページ遷移が確定してユーザーが操作可能になったタイミング(新ページ確定)
         {
-          name: 'home-detail', 
+          name: 'home-detail',
           from: {
             // ✅ custom → 自分で条件を自由に書ける関数
             //             true → このtransitionを使う
@@ -338,6 +341,7 @@ class App {
   }
 
   // ✅ 画像を読み込み後に発火させる
+  // callback → ここでは、Media初期化、テクスチャ生成、テキストアニメーション発火などで使用
   loadImages(callback?: () => void) {
     const medias = document.querySelectorAll('img');
     let loadedImages = 0; // ロードした画像の枚数
@@ -370,10 +374,6 @@ class App {
     if(callback) callback();
     ScrollTrigger.refresh(); // スクロールや要素の位置を再計算
   }
-
-  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-  // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
 
   // ✅ フォントの読み込み後に発火
   // → webフォントの読み込み前にGSAPのテキスト分割をするとずれてしまう可能性があるため
