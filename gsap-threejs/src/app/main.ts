@@ -77,6 +77,7 @@ class App {
 
     // ✅ Barba
     // → ページをリロードせずに、HTMLだけ差し替えてアニメーション付きで遷移させるライブラリ
+    //   aタグを監視していて、from.customで条件に合うtransitionを発火する
     // ⭐️ Barbaの挙動
     // クリック
     //   ↓
@@ -93,9 +94,9 @@ class App {
     barba.init({
       prefetchIgnore: true, // リンクにマウスを乗せた時などに、遷移先ページのHTMLを事前取得しておく機能を無効化
       transitions: [
-        {
+        { 
+          // ⭐️ detail(詳細ページ) → Homeに戻る時に使う
           name: 'default-transition', // 通常のページ遷移用のトランジション
-                                      // ⭐️ detail(詳細ページ)からHomeに戻る時に使う
           before: () => { // ページ遷移開始直前
             // console.log("before")
             this.scrollBlocked = true; // スクロールを止める
@@ -188,12 +189,12 @@ class App {
         {
           name: 'home-detail',
           from: {
-            // ✅ custom → 自分で条件を自由に書ける関数
-            //             true → このtransitionを使う
-            //             false → このtransitionは使わない 
+            // ⭐️ custom → どのページ遷移の時にも評価される。
+            //             trueを返したtransitionが実行される
             custom: () => { 
+              // a.grid__item をクリックしたら付与される
               const activeLink = document.querySelector('a[data-home-link-active="true"]');
-              // console.log(activeLink); // クリックしたaタグ → クリックしたら付与される
+              // console.log(activeLink);
               if(!activeLink) return false;
 
               return true;
@@ -211,7 +212,7 @@ class App {
               if(!media) return;
               media.scrollTrigger.kill(); // ScrollTriggerの監視を停止
 
-              const currentProgress = media.material.uniforms.uProgress.value;
+              const currentProgress = media.material.uniforms.uProgress.value; // 0 〜　1。スクロールに連動
               // console.log(currentProgress);
               const totalDuration = 1.2;
 
@@ -220,9 +221,9 @@ class App {
                 // console.log("!==")
                 const remainingDuration = totalDuration * currentProgress; // 0 〜 1.2
 
-                tl.to(media.material.uniforms.uProgress, {
-                  duration: remainingDuration,
+                tl.to(media.material.uniforms.uProgress, { // → uProgressを0に。多分ブロックに影響
                   value: 0,
+                  duration: remainingDuration,
                   ease: 'linear',
                 }, 0);
               } else { // クリックした画像
@@ -245,10 +246,16 @@ class App {
             // ✅ Promiseを返せば、内部でBarbaが待ってくれる仕組み
             return new Promise<void>((resolve) => {
               tl.call(() => {
-                resolve();
+                resolve(); // これが解決されてから、leaveの処理へと移る。
               });
             });
           },
+
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+
+
           leave: () => { // ✅ 旧ページをアニメーションで消す
             // ↓ 旧ページの要素を固定していく
             scrollTop = this.scroll.getScroll(); // 現在のスクロール量を取得
