@@ -1,6 +1,8 @@
 
 // ✅ media.ts
 
+// canvas.tsで発火
+
 // const media = new Media({
 //   element: image, → 画像
 //   scene: this.scene,

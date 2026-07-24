@@ -29,7 +29,7 @@ class App {
   scroll: Scroll;
   template: 'home' | 'detail';
 
-  mediaHomeState: Flip.FlipState;
+  mediaHomeState: Flip.FlipState; // Flipでimgの状態を保存
   scrollBlocked: boolean = false; // スクロールするか、停止させるか
   scrollTop: number;
   textAnimation: TextAnimation;
@@ -161,7 +161,7 @@ class App {
             // console.log(template);
             this.setTemplate(template);
 
-            this.loadImages(() => {  // 画像のロードが完了したら発火
+            this.loadImages(() => {  // 画像のロードが完了したらコールバック発火
               this.canvas.medias = []; // Media を格納する配列
               this.canvas.createMedias(); // Media初期化、テクスチャ生成
               this.textAnimation.animateIn({ delay: 0.3 });
@@ -200,6 +200,11 @@ class App {
               return true;
             },
           },
+
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
+
           before: () => { // ✅ 遷移開始前
             this.scrollBlocked = true; // スクロール停止
             this.scroll.s?.paused(true); // ScrollSmoother停止
@@ -207,7 +212,7 @@ class App {
             const tl = this.textAnimation.animateOut(); // 👉 テキストを消す。これにアニメーションを連結させていく
 
             activeLinkImage = document.querySelector('a[data-home-link-active="true"] img') as HTMLImageElement;
-
+            // console.log(activeLinkImage);
             this.canvas.medias?.forEach((media) => {
               if(!media) return;
               media.scrollTrigger.kill(); // ScrollTriggerの監視を停止
@@ -251,15 +256,10 @@ class App {
             });
           },
 
-          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-          // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-
-
           leave: () => { // ✅ 旧ページをアニメーションで消す
             // ↓ 旧ページの要素を固定していく
             scrollTop = this.scroll.getScroll(); // 現在のスクロール量を取得
-
+            // console.log(scrollTop);
             const container = document.querySelector('.container') as HTMLElement;
             // console.log(container)
             container.style.position = 'fixed';
@@ -281,6 +281,7 @@ class App {
           //    .containerを差し替える
 
           beforeEnter: () => { // ✅ 新ページがDOMに入った直後
+            // console.log("beforeEnter");
             this.scroll.reset(); // トップに移動させる。scrollTop(0)
             this.scroll.destroy(); // ScrollSmoother を解除
           },
@@ -289,10 +290,11 @@ class App {
             this.textAnimation.init();
 
             const detailContainer = document.querySelector('.details-container') as HTMLElement;
-
+            // console.log(detailContainer);
             detailContainer.innerHTML = '';
-            // ⭐️ detailページに移動させる
-            detailContainer.append(activeLinkImage);
+
+            detailContainer.append(activeLinkImage); // ここではまだアニメーションさせていない。
+                                                     // → DOMを差し込むだけ。
 
             const template = this.getCurrentTemplate();
             this.setTemplate(template);
@@ -302,7 +304,7 @@ class App {
 
               this.textAnimation.animateIn({ delay: 0.3 });
 
-              // ⭐️ さっき保存した位置(First)から、今の位置(Last)へアニメーションしてくれと命令
+              // ⭐️ ここで、位置を保存した場所から、実際にDOMを差し込んだ位置まで動かす
               Flip.from(this.mediaHomeState, {
                 absolute: true,
                 duration: 1,
@@ -335,7 +337,7 @@ class App {
 
     // console.log(this); // App {canvas: Canvas, scroll: Scroll, template: 'home', ... }
     this.render = this.render.bind(this);
-    gsap.ticker.add(this.render);
+    gsap.ticker.add(this.render); // 👉 内部でrequestAnimationFrameが発火
   }
 
   // ✅ 現在のページの種別を取得
@@ -400,6 +402,7 @@ class App {
 
   // ✅ スクロール量を取得、meshのy軸の動きを制御
   render() {
+    // console.log("render main");
     // scrollTop =「スクロールによって、トップがどれだけ上に押し上げられたか」という意味
     // console.log(this.scroll.getScroll());
     this.scrollTop = this.scroll?.getScroll() || 0; // 👉 スクロール量を取得
